@@ -133,7 +133,7 @@
             <h2 class="text-lg font-bold">チャンネル {channel?.title ?? ''}</h2>
             <div>
                 {#if channel}
-                    <img src={channel?.thumbnailUrl}/>
+                    <img src={channel?.thumbnailUrl} alt="channel thumbnail"/>
                     <p>{format(parseISO(channel?.publishedAt), 'yyyy/MM/dd')} に登録</p>
                     <p>チャンネル登録者数 {channel?.subscriberCount.toLocaleString()} 人</p>
                     <p>{channel?.videoCount.toLocaleString()} 動画</p>
