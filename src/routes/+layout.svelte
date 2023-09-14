@@ -1,15 +1,15 @@
 <script>
-	import "./styles.css";
+	import './styles.css';
 </script>
 
 <div class="app">
-	<header></header>
+	<header />
 
 	<main>
 		<slot />
 	</main>
 
-	<footer></footer>
+	<footer />
 </div>
 
 <style>
