@@ -4,6 +4,8 @@ import { YOUTUBE_DATA_API_KEY } from '$env/static/private';
 import { youtube_v3 } from '@googleapis/youtube';
 import ky from 'ky';
 import { GaxiosError } from 'gaxios/build/src/common';
+import type { GetYoutubeVideosResponse } from './entity/GetYoutubeVideosResponse';
+import Arrays from '$lib/util/Arrays';
 
 const youtubeDataAPI = new youtube_v3.Youtube({
 	auth: YOUTUBE_DATA_API_KEY
@@ -47,7 +49,7 @@ export async function GET({ url }: RequestEvent) {
 	}
 
 	const videoIdAndTypeMapping = new Map<string, 'video' | 'short'>();
-	for (const ids of arrayChunk(videoIds, Math.max(+limit, 25))) {
+	for (const ids of Arrays.chunk(videoIds, Math.max(+limit, 25))) {
 		const mappings = await Promise.all(
 			ids.map(async (id) => ({
 				id,
@@ -100,14 +102,4 @@ async function isShortVideo(videoId: string) {
 	const response = await ky.head(`https://youtube.com/shorts/${videoId}`);
 
 	return /\/shorts\//.test(response.url);
-}
-
-// HACK: 余裕があればutilsに切り出す
-function arrayChunk<T>(array: T[], size: number): T[][] {
-	if (size <= 0) return [[]];
-	const result = [];
-	for (let i = 0, j = array.length; i < j; i += size) {
-		result.push(array.slice(i, i + size));
-	}
-	return result;
 }
