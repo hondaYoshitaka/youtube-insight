@@ -77,9 +77,9 @@ export async function GET({ url }: RequestEvent) {
 	if (response.data.items == null) {
 		throw error(404);
 	}
-	const videos = await Promise.all(
+	const videos: GetYoutubeVideosResponse = await Promise.all(
 		response.data.items.map(async (data) => ({
-			url: data.id ? `https://youtube.com/watch?v=${data.id}` : '',
+			url: data.id ? `https://youtube.com/watch?v=${data.id}` : undefined,
 			title: data.snippet?.localized?.title,
 			description: data.snippet?.localized?.description,
 			thumbnailUrl: data.snippet?.thumbnails?.default?.url,
@@ -88,7 +88,7 @@ export async function GET({ url }: RequestEvent) {
 			viewCount: data.statistics?.viewCount ? +data.statistics.viewCount : 0,
 			likeCount: data.statistics?.likeCount ? +data.statistics.likeCount : 0,
 			commentCount: data.statistics?.commentCount ? +data.statistics.commentCount : 0,
-			tags: data.snippet?.tags,
+			tags: data.snippet?.tags ?? [],
 			isShort: data.id ? videoIdAndTypeMapping.get(data.id) === 'short' : undefined
 		}))
 	);
