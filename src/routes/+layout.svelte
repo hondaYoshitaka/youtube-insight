@@ -2,10 +2,10 @@
 	import './styles.css';
 </script>
 
-<div class="app">
+<div class="h-full">
 	<header />
 
-	<main>
+	<main class="h-full">
 		<slot />
 	</main>
 

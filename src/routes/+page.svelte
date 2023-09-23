@@ -1,5 +1,5 @@
 <script>
-	import YoutubeChannelStatics from '../components/YoutubeChannelStatics.svelte';
+	import YoutubeChannelStaticsPage from '../components/YoutubeChannelStaticsPage.svelte';
 </script>
 
 <svelte:head>
@@ -7,8 +7,8 @@
 	<meta name="description" content="Svelte demo app" />
 </svelte:head>
 
-<section>
-	<YoutubeChannelStatics />
+<section class="h-full">
+	<YoutubeChannelStaticsPage />
 </section>
 
 <style lang="postcss">
