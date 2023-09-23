@@ -157,22 +157,22 @@
                             <li class="w-40">
                                 <p class="mb-1">視聴回数</p>
                                 {totalViewCount.toLocaleString()}
-                                <p>(ave: {Math.round(averageViewCount).toLocaleString()})</p>
+                                <p>[ave. {Math.round(averageViewCount).toLocaleString()}]</p>
                             </li>
                             <li class="w-40 border-l-[1px] border-gray-300 ml-4 pl-4">
                                 <p class="mb-1">Likes</p>
                                 {totalLikeCount.toLocaleString()}
-                                <p>(ave: {Math.round(averageLikeCount).toLocaleString()})</p>
+                                <p>[ave. {Math.round(averageLikeCount).toLocaleString()}]</p>
                             </li>
                             <li class="w-40 border-l-[1px] border-gray-300 ml-4 pl-4">
                                 <p class="mb-1">Comments</p>
                                 {totalCommentCount.toLocaleString()}
-                                <p>(ave: {Math.round(averageCommentCount).toLocaleString()})</p>
+                                <p>[ave. {Math.round(averageCommentCount).toLocaleString()}]</p>
                             </li>
                             <li class="w-40 border-l-[1px] border-gray-300 ml-4 pl-4">
                                 <p class="mb-1">エンゲージメント</p>
-                                {totalEngagementCount.toLocaleString()}
-                                <p>(ave: {Math.round(averageEngagementCount).toLocaleString()}・{Math.round(averageEngagementRate * 10_000) / 100}%)</p>
+                                {totalEngagementCount.toLocaleString()} ({Math.round(averageEngagementRate * 10_000) / 100}%)
+                                <p>[ave. {Math.round(averageEngagementCount).toLocaleString()}]</p>
                             </li>
                         </ul>
                     </div>
