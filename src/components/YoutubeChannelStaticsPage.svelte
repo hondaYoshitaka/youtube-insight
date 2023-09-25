@@ -4,8 +4,7 @@
     import Fa from 'svelte-fa/src/fa.svelte';
     import {faYoutube} from '@fortawesome/free-brands-svg-icons';
     import Durations from '$lib/util/Durations';
-    // import { Line } from "svelte-chartjs";
-    // import 'chart.js/auto';
+    import BarChart from "./ui/LineChart.svelte";
 
     let handleName = '';
     let videoTypes = ['video', 'short'];
@@ -42,6 +41,48 @@
     let isShownSearchForm = false
 
     $: disabled = handleName.length === 0
+
+    $: viewCountChartData = {
+        labels: videos.map((video, index) => `#${index + 1}`),
+        datasets: [
+            {
+                label: '視聴回数',
+                data: videos.map(video => video?.viewCount),
+                borderWidth: 2,
+            },
+        ],
+    }
+    $: likeCountChartData = {
+        labels: videos.map((video, index) => `#${index + 1}`),
+        datasets: [
+            {
+                label: 'Likes',
+                data: videos.map(video => video?.likeCount),
+                borderWidth: 2,
+            },
+        ],
+    }
+    $: commentCountChartData = {
+        labels: videos.map((video, index) => `#${index + 1}`),
+        datasets: [
+            {
+                label: 'Comments',
+                data: videos.map(video => video?.commentCount),
+                borderWidth: 2,
+            },
+        ],
+    }
+    $: engagementCount = {
+        labels: videos.map((video, index) => `#${index + 1}`),
+        datasets: [
+            {
+                label: 'エンゲージメント (%)',
+                data: videos.map(video => (Math.round(video?.likeCount + video?.commentCount) / video?.viewCount * 10_000) / 100),
+                borderWidth: 2,
+            },
+        ],
+    }
+
 </script>
 
 <div class="flex flex-col h-full">
@@ -157,100 +198,77 @@
                             <li class="w-40">
                                 <p class="mb-1">視聴回数</p>
                                 {totalViewCount.toLocaleString()}
-                                <p>[ave. {Math.round(averageViewCount).toLocaleString()}]</p>
                             </li>
                             <li class="w-40 border-l-[1px] border-gray-300 ml-4 pl-4">
                                 <p class="mb-1">Likes</p>
                                 {totalLikeCount.toLocaleString()}
-                                <p>[ave. {Math.round(averageLikeCount).toLocaleString()}]</p>
                             </li>
                             <li class="w-40 border-l-[1px] border-gray-300 ml-4 pl-4">
                                 <p class="mb-1">Comments</p>
                                 {totalCommentCount.toLocaleString()}
-                                <p>[ave. {Math.round(averageCommentCount).toLocaleString()}]</p>
                             </li>
                             <li class="w-40 border-l-[1px] border-gray-300 ml-4 pl-4">
                                 <p class="mb-1">エンゲージメント</p>
                                 {totalEngagementCount.toLocaleString()} ({Math.round(averageEngagementRate * 10_000) / 100}%)
-                                <p>[ave. {Math.round(averageEngagementCount).toLocaleString()}]</p>
                             </li>
                         </ul>
                     </div>
                 </div>
             {/if}
 
-            <ul class="divide-y divide-slate-100">
-                {#each videos as video}
-                    {@const duration = Durations.parseISO8601(video.duration)}
-                    <div class="flex items-start space-x-6 px-2 py-4">
-                        <img
-                                src={video.thumbnailUrl}
-                                alt={video.title}
-                                width="60"
-                                height="88"
-                                class="flex-none rounded-md bg-slate-100"
-                        />
+            {#if videos.length > 0}
+                <div class="flex flex-row mt-2">
+                    <div class="w-1/4">
+                        <BarChart data={viewCountChartData} />
+                    </div>
+                    <div class="w-1/4">
+                        <BarChart data={likeCountChartData} />
+                    </div>
+                    <div class="w-1/4">
+                        <BarChart data={commentCountChartData} />
+                    </div>
+                    <div class="w-1/4">
+                        <BarChart data={engagementCount} />
+                    </div>
+                </div>
 
-                        <div class="min-w-0 relative flex-auto">
-                            <h2 class="font-semibold text-slate-900 truncate pr-20">
+                <table class="w-full text-xs text-gray-600 mt-8 border-collapse">
+                    <thead class="text-left bg-neutral-100">
+                    <tr>
+                        <th class="py-2">動画タイトル</th>
+                        <th class="text-right">視聴回数</th>
+                        <th class="text-right">動画尺</th>
+                        <th class="text-right">投稿日時</th>
+                        <th class="text-right">Likes</th>
+                        <th class="text-right">Comments</th>
+                        <th class="text-right">エンゲージメント数</th>
+                        <th class="text-right">エンゲージメント率</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {#each videos as video}
+                        {@const duration = Durations.parseISO8601(video.duration)}
+                        <tr class="border-y border-neutral-200">
+                            <td class="py-2">
                                 {#if video.isShort}
-									<span
-                                            class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded text-pink-600 bg-pink-200 last:mr-0 mr-1"
-                                    >short</span
-                                    >
+                                <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded text-pink-600 bg-pink-200 last:mr-0 mr-1">
+                                    short
+                                </span>
                                 {/if}
                                 <a href={video.url}>{video.title}</a>
-                            </h2>
-                            <dl class="mt-2 flex flex-wrap text-sm leading-6 font-medium">
-                                <div class="absolute top-0 right-0 flex items-center space-x-1">
-                                    <dt class="text-sky-500">
-                                        <span class="sr-only">Star rating</span>
-                                        <svg width="16" height="20" fill="currentColor">
-                                            <path
-                                                    d="M7.05 3.691c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.372 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.539 1.118l-2.8-2.034a1 1 0 00-1.176 0l-2.8 2.034c-.783.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.363-1.118L.98 9.483c-.784-.57-.381-1.81.587-1.81H5.03a1 1 0 00.95-.69L7.05 3.69z"
-                                            />
-                                        </svg>
-                                    </dt>
-                                    <dd>{video.viewCount.toLocaleString()} 回視聴</dd>
-                                </div>
-
-                                <div>
-                                    <dt class="sr-only">高く評価</dt>
-                                    <dd class="px-1.5 ring-1 ring-slate-200 rounded">
-                                        {video.likeCount.toLocaleString()} likes
-                                    </dd>
-                                </div>
-                                <div class="ml-2">
-                                    <dt class="sr-only">コメント</dt>
-                                    <dd class="px-1.5 ring-1 ring-slate-200 rounded">
-                                        {video.commentCount.toLocaleString()}
-                                        comments
-                                    </dd>
-                                </div>
-                                <div class="ml-2">
-                                    <dt class="sr-only">動画尺</dt>
-                                    <dd>
-                                        {#if duration.hours > 0}{String(duration.hours).padStart(2, '0')}:{/if}{String(
-                                        duration.minutes
-                                    ).padStart(2, '0')}:{String(duration.seconds).padStart(2, '0')}
-                                    </dd>
-                                </div>
-                                <div class="ml-2">
-                                    <dt class="sr-only">投稿日時</dt>
-                                    <dd>{format(parseISO(video.publishedAt), 'yyyy/MM/dd HH:mm')}</dd>
-                                </div>
-
-                                <div class="flex-none w-full mt-2 font-normal">
-                                    <dt class="sr-only">タグ</dt>
-                                    <dd class="text-slate-400">
-                                        {video.tags?.map((tag) => `#${tag}`).join(' ') ?? ''}
-                                    </dd>
-                                </div>
-                            </dl>
-                        </div>
-                    </div>
-                {/each}
-            </ul>
+                            </td>
+                            <td class="text-right">{video.viewCount.toLocaleString()}</td>
+                            <td class="text-right">{#if duration.hours > 0}{String(duration.hours).padStart(2, '0')}:{/if}{String(duration.minutes).padStart(2, '0')}:{String(duration.seconds).padStart(2, '0')}</td>
+                            <td class="text-right">{format(parseISO(video.publishedAt), 'yyyy/MM/dd HH:mm')}</td>
+                            <td class="text-right">{video.likeCount.toLocaleString()}</td>
+                            <td class="text-right">{video.commentCount.toLocaleString()}</td>
+                            <td class="text-right">{(video.likeCount + video.commentCount).toLocaleString()}</td>
+                            <td class="text-right">{((Math.round(video.likeCount + video.commentCount) / video.viewCount * 10_000) / 100).toLocaleString()}%</td>
+                        </tr>
+                    {/each}
+                    </tbody>
+                </table>
+            {/if}
         </article>
 
         {#if isShownSearchForm}
