@@ -5,6 +5,7 @@
     import {faYoutube} from '@fortawesome/free-brands-svg-icons';
     import Durations from '$lib/util/Durations';
     import BarChart from "./ui/LineChart.svelte";
+    import {HTTPError} from "ky";
 
     let handleName = '';
     let videoTypes = ['video', 'short'];
@@ -12,6 +13,11 @@
 
     let channel = null;
     let videos = [];
+
+    let isSearchFormVisible = false;
+
+    let isNoResultVisible = false;
+    let searchedHandleName = null;
 
     $: totalViewCount = videos.reduce((total, video) => total + video.viewCount, 0);
     $: averageViewCount = videos.length > 0 ? totalViewCount / videos.length : 0;
@@ -29,16 +35,25 @@
     const appAPI = new AppAPI();
 
     const search = async () => {
-        isShownSearchForm = false;
+        isSearchFormVisible = false;
+
+        isNoResultVisible = false;
+        searchedHandleName = handleName;
 
         channel = null;
         videos = [];
 
-        channel = await appAPI.fetchYoutubeChannelBy(handleName);
+        try {
+            channel = await appAPI.fetchYoutubeChannelBy(handleName);
+        } catch (error) {
+            if (error instanceof HTTPError && error.response.status === 404) {
+                isNoResultVisible = true;
+                return;
+            }
+            throw error;
+        }
         videos = await appAPI.fetchYoutubeVideosBy(channel.playlistId, videoTypes, limit);
     };
-
-    let isShownSearchForm = false
 
     $: disabled = handleName.length === 0
 
@@ -99,7 +114,7 @@
                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 w-full block pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                        bind:value={handleName}
                        placeholder="チャンネル名、動画の種類を分析"
-                       on:focus={() => isShownSearchForm = true}
+                       on:focus={() => isSearchFormVisible = true}
                 />
                 <button class="absolute top-0 right-0 py-2.5 px-4 h-full text-sm font-medium text-white bg-blue-700 rounded-r-lg border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                         class:opacity-50={disabled}
@@ -115,7 +130,7 @@
             </div>
         </div>
 
-        {#if isShownSearchForm}
+        {#if isSearchFormVisible}
             <div class="relative w-2/5 z-10">
                 <div class="absolute px-2 py-3 shadow-md w-full bg-white rounded-b">
                     <div>
@@ -171,6 +186,17 @@
 
     <section class="flex flex-wrap w-full h-full relative grow">
         <article class="w-full">
+            {#if isNoResultVisible}
+                <div class="flex justify-center items-center h-64 bg-gray-100 text-gray-800">
+                    <div class="text-center">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M10 4a6 6 0 100 12 6 6 0 000-12zm0 2a4 4 0 100 8 4 4 0 000-8zM16.293 14.707a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414z" />
+                        </svg>
+                        <h3 class="mt-2 text-lg font-medium">{searchedHandleName} は存在しません</h3>
+                    </div>
+                </div>
+            {/if}
+
             {#if channel}
                 <div class="w-full bg-neutral-50 px-6 py-3">
                     <div class="flex flex-row pt-2">
@@ -235,6 +261,7 @@
                 <table class="w-full text-xs text-gray-600 mt-8 border-collapse">
                     <thead class="text-left bg-neutral-100">
                     <tr>
+                        <th></th>
                         <th class="py-2">動画タイトル</th>
                         <th class="text-right">視聴回数</th>
                         <th class="text-right">動画尺</th>
@@ -246,9 +273,10 @@
                     </tr>
                     </thead>
                     <tbody>
-                    {#each videos as video}
+                    {#each videos as video, index}
                         {@const duration = Durations.parseISO8601(video.duration)}
                         <tr class="border-y border-neutral-200">
+                            <td>{`#${index + 1}`}</td>
                             <td class="py-2">
                                 {#if video.isShort}
                                 <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded text-pink-600 bg-pink-200 last:mr-0 mr-1">
@@ -271,8 +299,8 @@
             {/if}
         </article>
 
-        {#if isShownSearchForm}
-            <div class="w-full h-full opacity-25 bg-black absolute" on:click={() => isShownSearchForm = false}></div>
+        {#if isSearchFormVisible}
+            <div class="w-full h-full opacity-25 bg-black absolute" on:click={() => isSearchFormVisible = false}></div>
         {/if}
     </section>
 </div>
